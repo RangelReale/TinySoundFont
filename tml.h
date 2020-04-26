@@ -329,22 +329,18 @@ static int tml_parsemessage(tml_message** f, struct tml_parser* p)
 				break;
 
 			case TML_TEXT:
-				TML_WARN("META: text");
-				printf("TEXT: '%.*s'\n", buflen, metadata);
 				evt->type = TML_TEXT;
 				evt->text = TML_MALLOC(buflen + 1);
 				strncpy_s(evt->text, buflen+1, metadata, buflen);
 				break;
 
 			case TML_LYRIC:
-				TML_WARN("META: lyric");
 				evt->type = TML_LYRIC;
 				evt->text = TML_MALLOC(buflen + 1);
 				strncpy_s(evt->text, buflen+1, metadata, buflen);
 				break;
 
 			default:
-				printf("** META: %d\n", meta_type);
 				evt->type = 0;
 		}
 	}

@@ -169,9 +169,9 @@ int main(int argc, char *argv[])
 	//Wait until the entire MIDI file has been played back (until the end of the linked message list is reached)
 	int ct = 0;
 	while (g_MidiMessage != NULL) {
-		ct++;
-		if (ct > 100)
-			break;
+		//ct++;
+		//if (ct > 100)
+		//	break;
 		Pa_Sleep(100);
 	}
 

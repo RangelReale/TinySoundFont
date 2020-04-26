@@ -18,6 +18,9 @@ static void AudioCallback(void* data, Uint8 *stream, int len)
 {
 	//Number of samples to process
 	int SampleBlock, SampleCount = (len / (2 * sizeof(float))); //2 output channels
+
+	fprintf(stdout, "%d --- %d\n", len, SampleCount);
+
 	for (SampleBlock = TSF_RENDER_EFFECTSAMPLEBLOCK; SampleCount; SampleCount -= SampleBlock, stream += (SampleBlock * (2 * sizeof(float))))
 	{
 		//We progress the MIDI playback and then process TSF_RENDER_EFFECTSAMPLEBLOCK samples at once
@@ -32,9 +35,11 @@ static void AudioCallback(void* data, Uint8 *stream, int len)
 					tsf_channel_set_presetnumber(g_TinySoundFont, g_MidiMessage->channel, g_MidiMessage->program, (g_MidiMessage->channel == 9));
 					break;
 				case TML_NOTE_ON: //play a note
+					fprintf(stdout, "NOTE ON\n");
 					tsf_channel_note_on(g_TinySoundFont, g_MidiMessage->channel, g_MidiMessage->key, g_MidiMessage->velocity / 127.0f);
 					break;
 				case TML_NOTE_OFF: //stop a note
+					fprintf(stdout, "NOTE OFF\n");
 					tsf_channel_note_off(g_TinySoundFont, g_MidiMessage->channel, g_MidiMessage->key);
 					break;
 				case TML_PITCH_BEND: //pitch wheel modification
@@ -42,6 +47,9 @@ static void AudioCallback(void* data, Uint8 *stream, int len)
 					break;
 				case TML_CONTROL_CHANGE: //MIDI controller messages
 					tsf_channel_midi_control(g_TinySoundFont, g_MidiMessage->channel, g_MidiMessage->control, g_MidiMessage->control_value);
+					break;
+				default:
+					fprintf(stdout, "UNKNOWN MESSAGE: %c\n", g_MidiMessage->type);
 					break;
 			}
 		}
@@ -73,7 +81,7 @@ int main(int argc, char *argv[])
 	//Venture (Original WIP) by Ximon
 	//https://musescore.com/user/2391686/scores/841451
 	//License: Creative Commons copyright waiver (CC0)
-	TinyMidiLoader = tml_load_filename("venture.mid");
+	TinyMidiLoader = tml_load_filename("M:\\transfer\\Kar\\favorites\\Bad Moon Rising - Creedence Clearwater Revival (1969).kar"); // "venture.mid");
 	if (!TinyMidiLoader)
 	{
 		fprintf(stderr, "Could not load MIDI file\n");
@@ -84,7 +92,7 @@ int main(int argc, char *argv[])
 	g_MidiMessage = TinyMidiLoader;
 
 	// Load the SoundFont from a file
-	g_TinySoundFont = tsf_load_filename("florestan-subset.sf2");
+	g_TinySoundFont = tsf_load_filename("M:\\transfer\\Kar\\FluidR3_GM.sf2"); //"florestan-subset.sf2");
 	if (!g_TinySoundFont)
 	{
 		fprintf(stderr, "Could not load SoundFont\n");

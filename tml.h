@@ -38,6 +38,8 @@
 #ifndef TML_INCLUDE_TML_INL
 #define TML_INCLUDE_TML_INL
 
+#include <string.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -48,6 +50,7 @@ extern "C" {
 #else
 #define TMLDEF extern
 #endif
+
 
 // Channel message type
 enum TMLMessageType
@@ -94,6 +97,7 @@ typedef struct tml_message
 
 	// The pointer to the next message in time following this event
 	struct tml_message* next;
+	char *text;
 } tml_message;
 
 // The load functions will return a pointer to a struct tml_message.
@@ -291,6 +295,7 @@ static int tml_parsemessage(tml_message** f, struct tml_parser* p)
 		if (!*f) { TML_ERROR("Out of memory"); return -1; }
 	}
 	evt = *f + p->message_count;
+	evt->text = NULL;
 
 	//check what message we have
 	if ((status == TML_SYSEX) || (status == TML_EOX)) //sysex
@@ -323,7 +328,23 @@ static int tml_parsemessage(tml_message** f, struct tml_parser* p)
 				((struct tml_tempomsg*)evt)->Tempo[2] = metadata[2];
 				break;
 
+			case TML_TEXT:
+				TML_WARN("META: text");
+				printf("TEXT: '%.*s'\n", buflen, metadata);
+				evt->type = TML_TEXT;
+				evt->text = TML_MALLOC(buflen + 1);
+				strncpy_s(evt->text, buflen+1, metadata, buflen);
+				break;
+
+			case TML_LYRIC:
+				TML_WARN("META: lyric");
+				evt->type = TML_LYRIC;
+				evt->text = TML_MALLOC(buflen + 1);
+				strncpy_s(evt->text, buflen+1, metadata, buflen);
+				break;
+
 			default:
+				printf("** META: %d\n", meta_type);
 				evt->type = 0;
 		}
 	}
@@ -507,6 +528,14 @@ TMLDEF int tml_get_tempo_value(tml_message* msg)
 
 TMLDEF void tml_free(tml_message* f)
 {
+	tml_message *fs = f;
+	while (fs != NULL)
+	{
+		if (fs->text != NULL) {
+			TML_FREE(fs->text);
+		}
+		fs = fs->next;
+	}
 	TML_FREE(f);
 }
 
